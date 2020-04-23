@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GrabbingAbility.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AChronoRPGCharacter
@@ -49,13 +50,13 @@ AChronoRPGCharacter::AChronoRPGCharacter()
 
 //////////////////////////////////////////////////////////////////////////
 // Input
-
+/*
 void AChronoRPGCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	//PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	//PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AChronoRPGCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AChronoRPGCharacter::MoveRight);
@@ -75,13 +76,31 @@ void AChronoRPGCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AChronoRPGCharacter::OnResetVR);
 }
+*/
 
+void AChronoRPGCharacter::SetMyChronoRPGPlayerController(AChronoRPGPlayerController* ControllerToSet)
+{
+	MyChronoRPGPlayerController = ControllerToSet;
+}
+
+void AChronoRPGCharacter::DropProp()
+{
+	UGrabbingAbility* GrabbingAbility = FindComponentByClass<UGrabbingAbility>();
+	if (GrabbingAbility)
+	{
+		GrabbingAbility->DropProp();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("A PhysicsHandleComponent type was not found for Character: %s"), *GetName())
+	}
+}
 
 void AChronoRPGCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
-
+/*
 void AChronoRPGCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
 		Jump();
@@ -132,3 +151,4 @@ void AChronoRPGCharacter::MoveRight(float Value)
 		AddMovementInput(Direction, Value);
 	}
 }
+*/

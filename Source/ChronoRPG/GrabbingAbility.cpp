@@ -73,6 +73,7 @@ void UGrabbingAbility::DropProp()
 
 	// Reset the necessary member fields
 	bIsAlreadyHoldingSomething = false;
+	PropAlreadyHeld->OnReEnableInteraction();
 	PropAlreadyHeld = nullptr;
 }
 
