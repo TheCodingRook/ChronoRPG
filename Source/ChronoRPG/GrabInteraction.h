@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(ClassGroup = Custom, meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CHRONORPG_API UGrabInteraction : public UInteractionComponentBase
 {
 	GENERATED_BODY()

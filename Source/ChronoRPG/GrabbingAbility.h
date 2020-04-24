@@ -9,7 +9,7 @@
 /**
  * Custom PhysicsHandleComponent to implement grabbing props functionality 
  */
-UCLASS(CollapseCategories, ClassGroup = Custom, meta = (BlueprintSpawnableComponent))
+UCLASS(CollapseCategories, ClassGroup = Custom, Blueprintable, meta = (BlueprintSpawnableComponent))
 class CHRONORPG_API UGrabbingAbility : public UPhysicsHandleComponent
 {
 	GENERATED_BODY()
