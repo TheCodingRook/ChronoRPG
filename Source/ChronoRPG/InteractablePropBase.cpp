@@ -13,7 +13,8 @@ AInteractablePropBase::AInteractablePropBase()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PropMesh = CreateDefaultSubobject<UStaticMeshComponent>("Prop Mesh");
-	PropMesh->SetupAttachment(RootComponent); // set it up as root component
+	//PropMesh->SetupAttachment(RootComponent);
+	SetRootComponent(PropMesh);  // set it up as root component
 
 	InteractionTrigger = CreateDefaultSubobject<USphereComponent>("Interaction Trigger");
 	InteractionTrigger->SetSphereRadius(100.f);

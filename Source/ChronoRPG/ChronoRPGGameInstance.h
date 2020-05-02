@@ -15,6 +15,9 @@ class CHRONORPG_API UChronoRPGGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+
+	UChronoRPGGameInstance();
+
 	UFUNCTION(BlueprintCallable, Category = "Interaction Commands")
 	void PushNewInteractionCommand(class UInteractionComponentBase* NewInteraction);
 
@@ -27,6 +30,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Interaction Commands")
 	TArray<UInteractionComponentBase*> GetInteractionCommandStack() const {return InteractionCommandStack; }
 
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Actor Pools")
+	class UActorPool* ApplePool;
+
 private:
 	TArray<UInteractionComponentBase*> InteractionCommandStack;
+
+
 };

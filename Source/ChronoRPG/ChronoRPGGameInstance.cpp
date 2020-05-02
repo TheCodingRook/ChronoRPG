@@ -3,6 +3,12 @@
 
 #include "ChronoRPGGameInstance.h"
 #include "InteractionComponentBase.h"
+#include "ActorPool.h"
+
+UChronoRPGGameInstance::UChronoRPGGameInstance()
+{
+	ApplePool = CreateDefaultSubobject<UActorPool>(FName("Spawned Apples Pool"));
+}
 
 void UChronoRPGGameInstance::PushNewInteractionCommand(UInteractionComponentBase* NewInteractionCommand)
 {
