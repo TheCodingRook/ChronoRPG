@@ -57,6 +57,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = true))
 	class UStaticMeshComponent* PortalScreen;
 
+	// Mesh to use as a "door frame" around the portal
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = true))
+	UStaticMeshComponent* PortalFrame;
+
 	// The teleport point/location that this portal is linked to (in 3D space, somewhere else in the level)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Setup", meta = (AllowPrivateAccess = true))
 	USceneComponent* TeleportLocation;

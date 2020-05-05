@@ -20,7 +20,7 @@ ATimePortal::ATimePortal()
 	SetRootComponent(DefaultRoot);
 
 	// Set up the bounds volume for the time portal
-	PortalTrigger = CreateDefaultSubobject<UBoxComponent>("Portal Frame");
+	PortalTrigger = CreateDefaultSubobject<UBoxComponent>("Portal Trigger");
 	PortalTrigger->SetupAttachment(DefaultRoot);
 	PortalTrigger->SetRelativeRotation(FRotator(0.f, 0.f, 90.f));
 	
@@ -34,6 +34,12 @@ ATimePortal::ATimePortal()
 	PortalScreen = CreateDefaultSubobject<UStaticMeshComponent>("Portal Screeen");
 	PortalScreen->SetupAttachment(PortalTrigger);
 	PortalScreen->SetCastShadow(false);
+
+	// Set up the mesh for the portal's frame
+	PortalFrame = CreateDefaultSubobject<UStaticMeshComponent>("Portal Frame");
+	PortalFrame->SetupAttachment(PortalTrigger);
+	PortalFrame->SetRelativeLocation(FVector(0.f, 100.f, 0.f));
+	PortalFrame->SetRelativeRotation(FRotator(90.f, 0.f, -90.f));
 
 	// Set up the spawn point for this time portal and its "helper" children components
 	TeleportLocation = CreateDefaultSubobject<USceneComponent>("Teleport Location");
