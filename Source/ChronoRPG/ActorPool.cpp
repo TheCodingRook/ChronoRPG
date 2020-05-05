@@ -27,7 +27,7 @@ AActor* UActorPool::CheckOut()
 	{
 		return nullptr;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("%s CheckOut."), *GetName())
+	//UE_LOG(LogTemp, Warning, TEXT("%s CheckOut."), *GetName())
 		return Pool.Pop();
 }
 
