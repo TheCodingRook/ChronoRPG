@@ -5,10 +5,12 @@
 #include "ChronoRPGCharacter.h"
 #include "InteractionComponentBase.h"
 #include "ChronoRPGGameInstance.h"
+#include "TimeTravelComponent.h"
 
 AChronoRPGPlayerController::AChronoRPGPlayerController()
 {
-	// To come later
+	// Sets up a time travel component/subobject
+	TimeTravel = CreateDefaultSubobject<UTimeTravelComponent>(FName("Time Travel Component"));
 }
 
 void AChronoRPGPlayerController::SetupInputComponent()
@@ -17,22 +19,22 @@ void AChronoRPGPlayerController::SetupInputComponent()
 
 	check(InputComponent);
 
-	InputComponent->BindAction("Jump", IE_Pressed, this, &AChronoRPGPlayerController::Jump);
-	InputComponent->BindAction("Jump", IE_Released, this, &AChronoRPGPlayerController::StopJumping);
+	SetUpRecordableActionBinding("Jump", IE_Pressed, this, &AChronoRPGPlayerController::Jump);
+	SetUpRecordableActionBinding("Jump", IE_Released, this, &AChronoRPGPlayerController::StopJumping);
 
-	InputComponent->BindAxis("MoveForward", this, &AChronoRPGPlayerController::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &AChronoRPGPlayerController::MoveRight);
+	SetUpRecordableAxisBinding("MoveForward", this, &AChronoRPGPlayerController::MoveForward);
+	SetUpRecordableAxisBinding("MoveRight", this, &AChronoRPGPlayerController::MoveRight);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	InputComponent->BindAxis("Turn", this, &AChronoRPGPlayerController::Turn);
-	InputComponent->BindAxis("TurnRate", this, &AChronoRPGPlayerController::TurnAtRate);
-	InputComponent->BindAxis("LookUp", this, &AChronoRPGPlayerController::LookUp);
-	InputComponent->BindAxis("LookUpRate", this, &AChronoRPGPlayerController::LookUpAtRate);
+	SetUpRecordableAxisBinding("Turn", this, &AChronoRPGPlayerController::Turn);
+	SetUpRecordableAxisBinding("TurnRate", this, &AChronoRPGPlayerController::TurnAtRate);
+	SetUpRecordableAxisBinding("LookUp", this, &AChronoRPGPlayerController::LookUp);
+	SetUpRecordableAxisBinding("LookUpRate", this, &AChronoRPGPlayerController::LookUpAtRate);
 
-	InputComponent->BindAction("Interact", IE_Pressed, this, &AChronoRPGPlayerController::Interact);
-	InputComponent->BindAction("DropObject", IE_Pressed, this, &AChronoRPGPlayerController::DropProp);
+	SetUpRecordableActionBinding("Interact", IE_Pressed, this, &AChronoRPGPlayerController::Interact);
+	SetUpRecordableActionBinding("DropObject", IE_Pressed, this, &AChronoRPGPlayerController::DropProp);
 }
 
 void AChronoRPGPlayerController::BeginPlay()
@@ -51,11 +53,66 @@ void AChronoRPGPlayerController::OnPossess(APawn* ControlledPawn)
 	}
 }
 
+template<class UserClass>
+inline void AChronoRPGPlayerController::SetUpRecordableActionBinding(const FName NewAction, const EInputEvent KeyEvent, UserClass* Object, typename FInputActionHandlerSignature::TUObjectMethodDelegate<UserClass>::FMethodPtr Func)
+{
+	// First bind the action we want
+	InputComponent->BindAction(NewAction, KeyEvent, Object, Func);
+
+	// Keep track of the order in which we add movements/actions/axes in this array
+	// Deal with the special case that this is a "key released" type of action; presumably we have already bound the same action for "key pressed"!
+	if (KeyEvent == IE_Released)
+	{
+		FString NewActionString = "End" + NewAction.ToString();
+		FName NewEndAction(*NewActionString);
+		RecordableMovementAndActionBindings.Add(NewEndAction);
+	}
+	else
+	{
+		RecordableMovementAndActionBindings.Add(NewAction);
+	}
+}
+
+template<class UserClass>
+void AChronoRPGPlayerController::SetUpRecordableAxisBinding(const FName NewMovement, UserClass* Object, typename FInputAxisHandlerSignature::TUObjectMethodDelegate<UserClass>::FMethodPtr Func)
+{
+	// First bind the axis movements we want
+	InputComponent->BindAxis(NewMovement, Object, Func);
+
+	// Keep track of the order in which we add movements/actions/axes in this array
+	RecordableMovementAndActionBindings.Add(NewMovement);
+}
+
+
+void AChronoRPGPlayerController::RecordAction(FName ActionToRecord, float Value)
+{
+	// Record the action or movement in TimeTravelComponent
+	if (ensure(TimeTravel != nullptr))
+	{
+		if (TimeTravel->ShourldRecord())
+		{
+			// Record new action and its associated value
+			// CAUTION: Make sure you use the same name to describe the action / movement
+			FRecordedActionInput NewRecordedActionInput;
+			NewRecordedActionInput.RecordedAction = ActionToRecord;
+			NewRecordedActionInput.InputValue = Value;
+
+			TimeTravel->AddTimestampedInput(GetWorld()->GetTimeSeconds(), NewRecordedActionInput);
+		}
+	}
+
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s did not have a valid TimeTravelComponent!"), *GetName())
+	}
+}
+
 void AChronoRPGPlayerController::Jump()
 {
 	if (GetCharacter())
 	{
 		GetCharacter()->Jump();
+		RecordAction("Jump", 1.f);
 	}
 }
 
@@ -64,6 +121,7 @@ void AChronoRPGPlayerController::StopJumping()
 	if (GetCharacter())
 	{
 		GetCharacter()->StopJumping();
+		RecordAction("EndJump", 1.f);
 	}
 }
 
@@ -78,6 +136,7 @@ void AChronoRPGPlayerController::MoveForward(float Value)
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		GetCharacter()->AddMovementInput(Direction, Value);
+		RecordAction("MoveForward", Value);
 	}
 }
 
@@ -93,6 +152,7 @@ void AChronoRPGPlayerController::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		GetCharacter()->AddMovementInput(Direction, Value);
+		RecordAction("MoveRight", Value);
 	}
 }
 
@@ -101,6 +161,7 @@ void AChronoRPGPlayerController::Turn(float Value)
 	if ((GetCharacter() != NULL) && (Value != 0.0f))
 	{
 		AddYawInput(Value);
+		RecordAction("Turn", Value);
 	}
 }
 
@@ -109,6 +170,7 @@ void AChronoRPGPlayerController::TurnAtRate(float Rate)
 	if ((GetCharacter() != NULL) && (Rate != 0.0f))
 	{
 		AddYawInput(Rate * MyChronoRPGCharacter->BaseTurnRate * GetWorld()->GetDeltaSeconds());
+		RecordAction("TurnAtRate", Rate);
 	}
 }
 
@@ -117,6 +179,7 @@ void AChronoRPGPlayerController::LookUp(float Value)
 	if ((GetCharacter() != NULL) && (Value != 0.0f))
 	{
 		AddPitchInput(Value);
+		RecordAction("LookUp", Value);
 	}
 }
 
@@ -125,6 +188,7 @@ void AChronoRPGPlayerController::LookUpAtRate(float Rate)
 	if ((GetCharacter() != NULL) && (Rate != 0.0f))
 
 	AddPitchInput(Rate * MyChronoRPGCharacter->BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	RecordAction("LookUpAtRate", Rate);
 }
 
 void AChronoRPGPlayerController::Interact()

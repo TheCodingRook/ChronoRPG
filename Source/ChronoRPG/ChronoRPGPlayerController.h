@@ -7,7 +7,7 @@
 #include "ChronoRPGPlayerController.generated.h"
 
 /**
- * asdfsadfadfd cab tiy see this in good speed? can you follow this in real time speed? is the question hjhjhjhjhjhjhjhjhjhjhjh
+ * 
  */
 UCLASS()
 class CHRONORPG_API AChronoRPGPlayerController : public APlayerController
@@ -27,6 +27,21 @@ public:
 	// Getter for the reference of this controller's character
 	UFUNCTION(BlueprintPure, Category = "Character")
 	class AChronoRPGCharacter* GetMyChronoRPGCharacter() const { return MyChronoRPGCharacter; }
+
+	// Returns TimeTravelComponent subobject
+	UFUNCTION(BlueprintPure, Category = "Time Travel")
+	FORCEINLINE class UTimeTravelComponent* GetTimeTravelComponent() const { return TimeTravel;}
+
+	// Templated function so we can insert new action bindings that can be recorded and replayed
+	template <class UserClass>
+	void SetUpRecordableActionBinding(const FName NewAction, const EInputEvent KeyEvent, UserClass* Object, typename FInputActionHandlerSignature::TUObjectMethodDelegate<UserClass>::FMethodPtr Func);
+
+	// Templated function so we can insert new axis bindings that can be recorded and replayed
+	template <class UserClass>
+	void SetUpRecordableAxisBinding(const FName NewMovement, UserClass* Object, typename FInputAxisHandlerSignature::TUObjectMethodDelegate<UserClass>::FMethodPtr Func);
+
+	// Function that records action/movement by using TimeTravelComponent to store the specific action/movement name and its value
+	void RecordAction(FName ActionToRecord, float Value);
 
 	void Jump();
 	void StopJumping();
@@ -71,7 +86,15 @@ public:
 	// Drop Props
 	void DropProp();
 
+protected:
+	// Component that implements character's time-travelling ability
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time Travel", meta = (AllowPrivateAccess = "true"))
+	UTimeTravelComponent* TimeTravel;
+
 private:
 	// Store pointer to this controller's character
 	AChronoRPGCharacter* MyChronoRPGCharacter;
+
+	// Store those specific bindings that have been designated as being recordable and replayable
+	TArray<FName> RecordableMovementAndActionBindings;
 };
